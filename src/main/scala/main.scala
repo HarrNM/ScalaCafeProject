@@ -1,64 +1,57 @@
 object main extends App {
 
-  val menu = Map[String, List[String]](
-    "cola" -> List("cold", "0.50"),
-    "coffee" -> List("hot", "1.00"),
-    "cheese Sandwich" -> List("cold", "2.00"),
-    "steak Sandwich" -> List("hot", "4.50")
+  val cola = MenuItem(false, false, 0.50)
+  val coffee = MenuItem(false, true, 1.00)
+  val cheeseSandwich = MenuItem(true, false, 2.00)
+  val steakSandwich = MenuItem(true, true, 4.50)
+
+  val menuItems = Map(
+    "cola" -> cola,
+    "coffee" -> coffee,
+    "cheese Sandwich" -> cheeseSandwich,
+    "steak Sandwich" -> steakSandwich
   )
 
-  def formatInput(input: String): List[String] = {
-    val formatted = input.split(",").map(_.trim).toList
+  def formatInput(input: String): Seq[String] = {
+    val formatted = input.split(",").map(_.trim).toSeq
     formatted
   }
 
-  def inputItems(): List[String] = {
+  def inputItems(): Seq[String] = {
     println("What do you want to order?")
     val input = scala.io.StdIn.readLine()
     formatInput(input)
   }
 
-  def totalBill(items: List[String]): Double = {
-    var total = 0.00
-    if (!items.contains("cheese Sandwich") && !items.contains("steak Sandwich")) {
-      total = itemsCost(items)
+  def serviceCharge(items: Seq[MenuItem]): Double = {
+    if (items.exists(menuItems => menuItems.isHot) && items.exists(menuItems => menuItems.isFood)) {
+      val serviceCost = itemsCost(items) * 0.2
+      if (serviceCost >= 20) {
+        val maxServiceCost = 20
+        maxServiceCost
+      }
+      else {
+        serviceCost
+      }
+    }
+    else if (items.exists(menuItems => menuItems.isFood)) {
+      val serviceCost = itemsCost(items) * 0.1
+      serviceCost
     }
     else {
-      for (i <- 1 to items.length) {
-        if (items(i - 1) == "steak Sandwich") {
-          total = itemsCost(items)
-          val serviceCharge = 0.2 * total
-          if (serviceCharge >= 20) {
-            total = (total + 20)
-          }
-          else {
-            total = (total + serviceCharge)
-          }
-        }
-        else {
-          val foodBill = itemsCost(items)
-          total = (foodBill + (0.1 * foodBill))
-        }
-      }
+      val serviceCost = 0
+      serviceCost
     }
+  }
+
+  def itemsCost(items: Seq[MenuItem]): Double = {
+    val total = items.map(menuItems => menuItems.price).sum
     total
   }
 
-  def itemsCost(items: List[String]): Double = {
-    var total = 0.00
-    for (i <- 1 to items.length) {
-      items(i - 1) match {
-        case "cola" => total += 0.50
-        case "coffee" => total += 1.00
-        case "cheese Sandwich" => total += 2.00
-        case "steak Sandwich" => total += 4.50
-        case _ => total += 0
-      }
-    }
-    total
+  def totalBill(items: Seq[MenuItem]): Double = {
+    val bill = itemsCost(items) + serviceCharge(items)
+    bill
   }
 
-  var billOne = totalBill(List("cola", "coffee", "cheeseSandwich"))
-  println(billOne)
-  totalBill(List("cola", "steak Sandwich"))
 }
